@@ -1,0 +1,166 @@
+[
+  {
+    "scheme_code": 118989,
+    "scheme_name": "HDFC Mid Cap Fund - Growth Option - Direct Plan",
+    "fund_house": "HDFC Mutual Fund",
+    "scheme_type": "Open Ended Schemes",
+    "scheme_category": "Equity Scheme - Mid Cap Fund",
+    "latest_nav": 220.058,
+    "nav_date": "17-04-2026",
+    "nav_change_abs": 1.844,
+    "nav_change_pct": 0.845,
+    "historical_nav": [
+      {
+        "date": "17-04-2026",
+        "nav": 220.058
+      },
+      {
+        "date": "16-04-2026",
+        "nav": 218.214
+      },
+      {
+        "date": "15-04-2026",
+        "nav": 217.52
+      },
+      {
+        "date": "13-04-2026",
+        "nav": 213.692
+      },
+      {
+        "date": "10-04-2026",
+        "nav": 215.548
+      }
+    ],
+    "expense_ratio": null,
+    "fund_manager": null,
+    "aum_cr": null,
+    "sharpe_ratio": null,
+    "beta": null,
+    "alpha": null,
+    "std_deviation": null,
+    "sortino_ratio": null
+  },
+  {
+    "scheme_code": 120503,
+    "scheme_name": "Axis ELSS Tax Saver Fund - Direct Plan - Growth Option",
+    "fund_house": "Axis Mutual Fund",
+    "scheme_type": "Open Ended Schemes",
+    "scheme_category": "Equity Scheme - ELSS",
+    "latest_nav": 105.9826,
+    "nav_date": "17-04-2026",
+    "nav_change_abs": 0.8656,
+    "nav_change_pct": 0.8235,
+    "historical_nav": [
+      {
+        "date": "17-04-2026",
+        "nav": 105.9826
+      },
+      {
+        "date": "16-04-2026",
+        "nav": 105.117
+      },
+      {
+        "date": "15-04-2026",
+        "nav": 104.9259
+      },
+      {
+        "date": "13-04-2026",
+        "nav": 103.2303
+      },
+      {
+        "date": "10-04-2026",
+        "nav": 104.1348
+      }
+    ],
+    "expense_ratio": null,
+    "fund_manager": null,
+    "aum_cr": null,
+    "sharpe_ratio": null,
+    "beta": null,
+    "alpha": null,
+    "std_deviation": null,
+    "sortino_ratio": null
+  },
+  {
+    "scheme_code": 119597,
+    "scheme_name": "Sundaram Financial Services Opportunities Fund Direct Plan - Growth",
+    "fund_house": "Sundaram Mutual Fund",
+    "scheme_type": "Open Ended Schemes",
+    "scheme_category": "Equity Scheme - Sectoral/ Thematic",
+    "latest_nav": 122.1257,
+    "nav_date": "17-04-2026",
+    "nav_change_abs": 1.2769,
+    "nav_change_pct": 1.0566,
+    "historical_nav": [
+      {
+        "date": "17-04-2026",
+        "nav": 122.1257
+      },
+      {
+        "date": "16-04-2026",
+        "nav": 120.8488
+      },
+      {
+        "date": "15-04-2026",
+        "nav": 120.8642
+      },
+      {
+        "date": "13-04-2026",
+        "nav": 119.3197
+      },
+      {
+        "date": "10-04-2026",
+        "nav": 119.8997
+      }
+    ],
+    "expense_ratio": null,
+    "fund_manager": null,
+    "aum_cr": null,
+    "sharpe_ratio": null,
+    "beta": null,
+    "alpha": null,
+    "std_deviation": null,
+    "sortino_ratio": null
+  },
+  {
+    "scheme_code": 100122,
+    "scheme_name": "HDFC Balanced Fund - Growth Option",
+    "fund_house": "HDFC Mutual Fund",
+    "scheme_type": "Open Ended Schemes",
+    "scheme_category": "Income",
+    "latest_nav": 147.069,
+    "nav_date": "01-06-2018",
+    "nav_change_abs": -0.952,
+    "nav_change_pct": -0.6432,
+    "historical_nav": [
+      {
+        "date": "01-06-2018",
+        "nav": 147.069
+      },
+      {
+        "date": "31-05-2018",
+        "nav": 148.021
+      },
+      {
+        "date": "30-05-2018",
+        "nav": 147.461
+      },
+      {
+        "date": "29-05-2018",
+        "nav": 147.858
+      },
+      {
+        "date": "28-05-2018",
+        "nav": 148.426
+      }
+    ],
+    "expense_ratio": null,
+    "fund_manager": null,
+    "aum_cr": null,
+    "sharpe_ratio": null,
+    "beta": null,
+    "alpha": null,
+    "std_deviation": null,
+    "sortino_ratio": null
+  }
+]

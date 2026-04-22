@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WealthWise Advisor</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --ink: #0f1117;
+    --paper: #f5f0e8;
+    --gold: #c9a84c;
+    --gold-light: #e8d5a3;
+    --green: #2d6a4f;
+    --green-light: #52b788;
+    --red: #c1121f;
+    --surface: #fffdf7;
+    --border: #d9ceb8;
+    --muted: #7a7060;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  header {
+    background: var(--ink);
+    color: var(--gold);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 2px solid var(--gold);
+    flex-shrink: 0;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  header .subtitle {
+    font-size: 0.75rem;
+    color: var(--gold-light);
+    font-weight: 300;
+    margin-left: auto;
+  }
+
+  .icon-coin { font-size: 1.5rem; }
+
+  .layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 300px;
+    background: var(--surface);
+    border-right: 1.5px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+
+  .sidebar-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    padding: 16px 20px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .profile-form {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid var(--border);
+    background: var(--paper);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--ink);
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: var(--gold);
+  }
+
+  .input-prefix {
+    position: relative;
+  }
+
+  .input-prefix span {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 0.85rem;
+    pointer-events: none;
+  }
+
+  .input-prefix input {
+    padding-left: 22px;
+  }
+
+  .risk-pills {
+    display: flex;
+    gap: 6px;
+  }
+
+  .risk-pill {
+    flex: 1;
+    padding: 7px 6px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--muted);
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .risk-pill.active-low  { background: #e8f5e9; border-color: var(--green); color: var(--green); }
+  .risk-pill.active-med  { background: #fff8e1; border-color: var(--gold);  color: #8a6a00; }
+  .risk-pill.active-high { background: #ffebee; border-color: var(--red);   color: var(--red); }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 0;
+  }
+
+  .profile-summary {
+    display: none;
+    background: #fdf8ee;
+    border: 1px solid var(--gold-light);
+    border-radius: 4px;
+    margin: 0 20px 16px;
+    padding: 10px 12px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .profile-summary strong {
+    color: var(--ink);
+    display: block;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  /* ── CHAT AREA ── */
+  .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .msg {
+    display: flex;
+    gap: 10px;
+    animation: fadeUp 0.3s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg.user { flex-direction: row-reverse; }
+
+  .avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    font-weight: 700;
+  }
+
+  .avatar.ai   { background: var(--ink);  color: var(--gold); font-family: 'Playfair Display', serif; }
+  .avatar.user { background: var(--gold); color: var(--ink); }
+
+  .bubble {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 2px 12px 12px 12px;
+    font-size: 0.88rem;
+    line-height: 1.65;
+  }
+
+  .msg.user .bubble {
+    background: var(--ink);
+    color: var(--gold-light);
+    border-radius: 12px 2px 12px 12px;
+  }
+
+  .msg.ai .bubble {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    color: var(--ink);
+  }
+
+  .bubble p { margin-bottom: 8px; }
+  .bubble p:last-child { margin-bottom: 0; }
+  .bubble ul, .bubble ol { padding-left: 18px; margin: 6px 0; }
+  .bubble li { margin-bottom: 4px; }
+  .bubble strong { color: var(--green); }
+
+  /* Typing dots */
+  .typing-indicator {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    padding: 14px 16px;
+  }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: pulse 1.2s infinite;
+  }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes pulse {
+    0%, 80%, 100% { transform: scale(1); opacity: 0.5; }
+    40%            { transform: scale(1.3); opacity: 1; }
+  }
+
+  /* Quick prompts */
+  .quick-prompts {
+    display: flex;
+    gap: 8px;
+    padding: 8px 24px 0;
+    flex-wrap: wrap;
+  }
+
+  .qp {
+    font-size: 0.73rem;
+    padding: 4px 10px;
+    border: 1px solid var(--gold-light);
+    background: #fdf8ee;
+    color: #8a6a00;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .qp:hover { background: var(--gold-light); }
+
+  /* Input row */
+  .chat-input-area {
+    padding: 14px 24px;
+    border-top: 1.5px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  .chat-input-area textarea {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    background: var(--paper);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--ink);
+    border-radius: 6px;
+    outline: none;
+    resize: none;
+    min-height: 44px;
+    max-height: 120px;
+    line-height: 1.5;
+    transition: border-color 0.2s;
+  }
+
+  .chat-input-area textarea:focus { border-color: var(--gold); }
+
+  .send-btn {
+    width: 44px; height: 44px;
+    background: var(--ink);
+    color: var(--gold);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+
+  .send-btn:hover    { background: #1e2330; }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .sidebar { width: 100%; position: absolute; z-index: 10; transform: translateX(-100%); transition: transform 0.3s; }
+    .sidebar.open { transform: translateX(0); }
+    .layout { position: relative; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="icon-coin">🪙</span>
+  <h1>WealthWise Advisor</h1>
+  <span class="subtitle">Powered by AI · Personal Finance</span>
+</header>
+
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar">
+    <div class="sidebar-title">Your Investor Profile</div>
+
+    <div class="profile-form">
+
+      <div class="form-group">
+        <label>Monthly Investment (₹)</label>
+        <div class="input-prefix">
+          <span>₹</span>
+          <input type="number" id="monthlyAmount" placeholder="e.g. 5000" min="500" step="500" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Investment Goal</label>
+        <select id="goal">
+          <option value="">Select your goal…</option>
+          <option value="Retirement corpus">Retirement corpus</option>
+          <option value="Child's education">Child's education</option>
+          <option value="Buying a house">Buying a house</option>
+          <option value="Wealth creation">Wealth creation</option>
+          <option value="Emergency fund">Emergency fund</option>
+          <option value="Tax saving (ELSS)">Tax saving (ELSS)</option>
+          <option value="Short-term savings">Short-term savings</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Investment Horizon</label>
+        <select id="horizon">
+          <option value="">Select duration…</option>
+          <option value="Less than 1 year">Less than 1 year</option>
+          <option value="1–3 years">1–3 years</option>
+          <option value="3–5 years">3–5 years</option>
+          <option value="5–10 years">5–10 years</option>
+          <option value="10+ years">10+ years</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Risk Appetite</label>
+        <div class="risk-pills">
+          <button class="risk-pill" onclick="setRisk(this,'Low','active-low')">🛡 Low</button>
+          <button class="risk-pill" onclick="setRisk(this,'Moderate','active-med')">⚖️ Moderate</button>
+          <button class="risk-pill" onclick="setRisk(this,'High','active-high')">🚀 High</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Monthly Income (₹)</label>
+        <div class="input-prefix">
+          <span>₹</span>
+          <input type="number" id="income" placeholder="e.g. 50000" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Age</label>
+        <input type="number" id="age" placeholder="e.g. 28" min="18" max="70" />
+      </div>
+
+      <div class="form-group">
+        <label>Existing Investments</label>
+        <select id="existing">
+          <option value="None">None</option>
+          <option value="FD / RD">FD / RD</option>
+          <option value="PPF / EPF">PPF / EPF</option>
+          <option value="Mutual Funds">Mutual Funds</option>
+          <option value="Stocks">Stocks</option>
+          <option value="Real Estate">Real Estate</option>
+          <option value="Mix of above">Mix of above</option>
+        </select>
+      </div>
+
+    </div><!-- /profile-form -->
+
+    <div class="divider"></div>
+
+    <div id="profileSummary" class="profile-summary">
+      <strong>📋 Active Profile</strong>
+      <span id="profileText"></span>
+    </div>
+
+  </div><!-- /sidebar -->
+
+  <!-- ── CHAT AREA ── -->
+  <div class="chat-area">
+
+    <div class="messages" id="messages">
+      <!-- Welcome message -->
+      <div class="msg ai">
+        <div class="avatar ai">W</div>
+        <div class="bubble">
+          <p>Welcome! I'm your <strong>WealthWise Advisor</strong> — an AI-powered financial guide.</p>
+          <p>Fill in your investor profile on the left, then ask me anything about
+             <strong>mutual funds, SIPs, tax saving, asset allocation</strong>, or any finance topic.
+             I'll tailor advice based on your profile! 🌱</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick prompts -->
+    <div class="quick-prompts">
+      <span class="qp" onclick="sendQuick('What mutual funds suit my profile?')">🎯 Recommend funds for me</span>
+      <span class="qp" onclick="sendQuick('Explain SIP vs lump sum investment')">💡 SIP vs Lump Sum</span>
+      <span class="qp" onclick="sendQuick('How much should I invest to reach my goal?')">📊 Calculate my target</span>
+      <span class="qp" onclick="sendQuick('What are ELSS funds and their tax benefits?')">🧾 ELSS &amp; Tax saving</span>
+      <span class="qp" onclick="sendQuick('How to diversify my portfolio?')">🗂 Diversification tips</span>
+    </div>
+
+    <!-- Input row -->
+    <div class="chat-input-area">
+      <textarea
+        id="userInput"
+        placeholder="Ask anything about investing…"
+        rows="1"
+        onkeydown="handleKey(event)"
+        oninput="autoResize(this)"
+      ></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+    </div>
+
+  </div><!-- /chat-area -->
+
+</div><!-- /layout -->
+
+<script>
+  // ── CONFIG ──────────────────────────────────────────────────────────────
+  const API_URL = "http://127.0.0.1:8000/chat";
+  // ── STATE ────────────────────────────────────────────────────────────────
+  let selectedRisk = "";
+  let conversationHistory = [];
+
+  // ── PROFILE HELPERS ──────────────────────────────────────────────────────
+  function setRisk(el, val, cls) {
+    document.querySelectorAll('.risk-pill').forEach(p => p.className = 'risk-pill');
+    el.classList.add(cls);
+    selectedRisk = val;
+  }
+
+  function getProfile() {
+    return {
+      amount  : document.getElementById('monthlyAmount').value,
+      goal    : document.getElementById('goal').value,
+      horizon : document.getElementById('horizon').value,
+      income  : document.getElementById('income').value,
+      age     : document.getElementById('age').value,
+      existing: document.getElementById('existing').value,
+      risk    : selectedRisk
+    };
+  }
+
+  function buildSystemPrompt(p) {
+    const filled = [];
+    if (p.amount)   filled.push(`Monthly SIP budget: ₹${Number(p.amount).toLocaleString('en-IN')}`);
+    if (p.goal)     filled.push(`Financial goal: ${p.goal}`);
+    if (p.horizon)  filled.push(`Investment horizon: ${p.horizon}`);
+    if (p.risk)     filled.push(`Risk appetite: ${p.risk}`);
+    if (p.income)   filled.push(`Monthly income: ₹${Number(p.income).toLocaleString('en-IN')}`);
+    if (p.age)      filled.push(`Age: ${p.age} years`);
+    if (p.existing) filled.push(`Existing investments: ${p.existing}`);
+
+    const profileText = filled.length
+      ? filled.join('. ') + '.'
+      : 'The user has not filled their profile yet — provide general advice.';
+
+    // Update sidebar summary
+    if (filled.length) {
+      const summary = document.getElementById('profileSummary');
+      summary.style.display = 'block';
+      document.getElementById('profileText').textContent = filled.join(' · ');
+    }
+
+    return `You are WealthWise, an expert Indian personal finance advisor specialising in mutual funds, SIPs, and wealth management. You give personalised, actionable advice tailored to the Indian financial market (NSE, BSE, SEBI regulations, Indian tax laws).
+
+INVESTOR PROFILE:
+${profileText}
+
+GUIDELINES:
+- Always personalise advice based on the investor profile above.
+- Mention specific fund categories (Large Cap, ELSS, Flexi Cap, Debt, Hybrid, etc.) relevant to their goal and risk profile.
+- Reference Indian-specific instruments: PPF, ELSS, NPS, FD, SGB, RBI Bonds where relevant.
+- Use ₹ for amounts; reference Indian regulations (SEBI, AMFI, Section 80C, 80CCD).
+- Be warm, educational, and clear — avoid jargon without explanation.
+- For recommendations always suggest 2–3 options with brief reasoning.
+- Include risk warnings where appropriate.
+- Use this exact response template for recommendation answers:
+  ## Recommended SIP Plan
+  **Profile Snapshot:** <1 line using user's inputs>
+  **Suggested Allocation (₹X/month):**
+  - <Category 1>: ₹<amount> (<percentage>) - <why>
+  - <Category 2>: ₹<amount> (<percentage>) - <why>
+  - <Category 3 optional>: ₹<amount> (<percentage>) - <why>
+  **Fund Categories to Consider (examples):**
+  - <Category>: <2 AMFI-registered examples>
+  - <Category>: <2 AMFI-registered examples>
+  **How to Start (4 steps):**
+  1. <step>
+  2. <step>
+  3. <step>
+  4. <step>
+  **Expected Range (not guaranteed):**
+  - <conservative return range and volatility note>
+  **Risk & Tax Notes:**
+  - <2-3 short bullets>
+  **Bottom Line:** <1-2 lines>
+- Do not use markdown tables. Use headings and bullet points only.
+- Keep responses concise but complete (150–300 words is ideal).`;
+  }
+
+  // ── TEXTAREA AUTO-RESIZE ─────────────────────────────────────────────────
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  }
+
+  // ── QUICK PROMPTS ────────────────────────────────────────────────────────
+  function sendQuick(text) {
+    document.getElementById('userInput').value = text;
+    sendMessage();
+  }
+
+  // ── RENDER HELPERS ───────────────────────────────────────────────────────
+  function markdownToHTML(text) {
+    const lines = text.split('\n');
+    let html = '';
+    let inUl = false;
+    let inOl = false;
+
+    const closeLists = () => {
+      if (inUl) { html += '</ul>'; inUl = false; }
+      if (inOl) { html += '</ol>'; inOl = false; }
+    };
+
+    const inline = (s) => s
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+
+      if (!line) {
+        closeLists();
+        continue;
+      }
+
+      if (line.startsWith('### ')) {
+        closeLists();
+        html += `<h3>${inline(line.slice(4))}</h3>`;
+        continue;
+      }
+
+      if (line.startsWith('## ')) {
+        closeLists();
+        html += `<h2>${inline(line.slice(3))}</h2>`;
+        continue;
+      }
+
+      if (line.startsWith('# ')) {
+        closeLists();
+        html += `<h1>${inline(line.slice(2))}</h1>`;
+        continue;
+      }
+
+      if (/^[-•]\s+/.test(line)) {
+        if (inOl) { html += '</ol>'; inOl = false; }
+        if (!inUl) { html += '<ul>'; inUl = true; }
+        html += `<li>${inline(line.replace(/^[-•]\s+/, ''))}</li>`;
+        continue;
+      }
+
+      if (/^\d+\.\s+/.test(line)) {
+        if (inUl) { html += '</ul>'; inUl = false; }
+        if (!inOl) { html += '<ol>'; inOl = true; }
+        html += `<li>${inline(line.replace(/^\d+\.\s+/, ''))}</li>`;
+        continue;
+      }
+
+      closeLists();
+      html += `<p>${inline(line)}</p>`;
+    }
+
+    closeLists();
+    return html;
+  }
+
+  function appendMessage(role, content) {
+    const msgs = document.getElementById('messages');
+    const div  = document.createElement('div');
+    div.className = `msg ${role}`;
+
+    const avatar = document.createElement('div');
+    avatar.className = `avatar ${role}`;
+    avatar.textContent = role === 'ai' ? 'W' : 'U';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.innerHTML  = role === 'ai' ? markdownToHTML(content) : `<p>${content}</p>`;
+
+    div.appendChild(avatar);
+    div.appendChild(bubble);
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function showTyping() {
+    const msgs = document.getElementById('messages');
+    const div  = document.createElement('div');
+    div.className = 'msg ai';
+    div.id = 'typingIndicator';
+    div.innerHTML = `
+      <div class="avatar ai">W</div>
+      <div class="bubble typing-indicator">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>`;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('typingIndicator');
+    if (t) t.remove();
+  }
+
+  // ── SEND MESSAGE ─────────────────────────────────────────────────────────
+  async function sendMessage() {
+    const input = document.getElementById('userInput');
+    const text  = input.value.trim();
+    if (!text) return;
+
+    input.value = '';
+    input.style.height = 'auto';
+    document.getElementById('sendBtn').disabled = true;
+
+    appendMessage('user', text);
+    conversationHistory.push({ role: 'user', content: text });
+    showTyping();
+
+    const profile      = getProfile();
+    const systemPrompt = buildSystemPrompt(profile);
+
+    try {
+        const res = await fetch(API_URL, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+    body: JSON.stringify({
+        messages: [
+        { role: 'system', content: systemPrompt },
+        ...conversationHistory
+        ]
+    })
+    });
+
+      const data = await res.json();
+
+      if (data.choices && data.choices[0]) {
+        const reply = data.choices[0].message.content;
+        conversationHistory.push({ role: 'assistant', content: reply });
+        removeTyping();
+        appendMessage('ai', reply);
+      } else {
+        removeTyping();
+        appendMessage('ai', '⚠️ No response received. Please check your API key or try again.');
+        console.error(data);
+      }
+    } catch (err) {
+      removeTyping();
+      appendMessage('ai', '⚠️ Network error. Please check your connection and try again.');
+      console.error(err);
+    }
+
+    document.getElementById('sendBtn').disabled = false;
+  }
+</script>
+
+</body>
+</html>
