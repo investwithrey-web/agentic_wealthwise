@@ -74,6 +74,7 @@ import logging
 import time
 from pathlib import Path
 
+import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -270,3 +271,8 @@ def chat(req: ChatRequest):
     except Exception as exc:
         logger.exception("route.chat.unhandled_exception")
         raise HTTPException(status_code=500, detail=f"Internal server error: {exc}") from exc
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
