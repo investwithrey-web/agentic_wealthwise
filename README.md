@@ -53,6 +53,16 @@ uvicorn main:app --reload
 
 Open: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
+## Render Deployment
+
+Use this start command on Render (important: no `--reload`):
+
+```bash
+uvicorn main:app --host 0.0.0.0 --port $PORT
+```
+
+This is also configured in `render.yaml`.
+
 ## API Endpoints
 
 - `GET /`

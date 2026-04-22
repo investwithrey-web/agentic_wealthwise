@@ -360,9 +360,24 @@
 
   /* Responsive */
   @media (max-width: 640px) {
-    .sidebar { width: 100%; position: absolute; z-index: 10; transform: translateX(-100%); transition: transform 0.3s; }
-    .sidebar.open { transform: translateX(0); }
-    .layout { position: relative; }
+    .layout {
+      flex-direction: column;
+      overflow: auto;
+    }
+
+    /* Keep profile panel visible on mobile instead of hidden off-canvas */
+    .sidebar {
+      width: 100%;
+      position: static;
+      transform: none;
+      border-right: none;
+      border-bottom: 1.5px solid var(--border);
+      max-height: 52vh;
+    }
+
+    .chat-area {
+      min-height: 48vh;
+    }
   }
 </style>
 </head>
@@ -505,7 +520,7 @@
 
 <script>
   // ── CONFIG ──────────────────────────────────────────────────────────────
-  const API_URL = "http://127.0.0.1:8000/chat";
+  const API_URL = "/chat";
   // ── STATE ────────────────────────────────────────────────────────────────
   let selectedRisk = "";
   let conversationHistory = [];

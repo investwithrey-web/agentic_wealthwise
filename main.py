@@ -69,37 +69,17 @@
 #     return response.json()
 
 import os
-import json
 import logging
-import time
 from pathlib import Path
 
+import requests
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-import requests
-from requests import RequestException
-
-try:
-    from langchain_core.tools import tool
-    from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
-    from langchain_openai import ChatOpenAI
-    from langgraph.prebuilt import create_react_agent
-    LANGGRAPH_AVAILABLE = True
-except Exception:
-    LANGGRAPH_AVAILABLE = False
 
 app = FastAPI()
 
-API_KEY = os.getenv("OPENROUTER_API_KEY", "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")
-FINNHUB_API_KEY = os.getenv("FINNHUB_API_KEY", "d7jtv1pr01qnk4ocshqgd7jtv1pr01qnk4ocshr0")
-BASE_DIR = Path(__file__).resolve().parent
-HTML_PATH = BASE_DIR / "wealth_advisor.html"
-OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-FINNHUB_QUOTE_URL = "https://finnhub.io/api/v1/quote"
-
-# Logging setup
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
     level=getattr(logging, LOG_LEVEL, logging.INFO),
@@ -107,140 +87,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger("wealthwise")
 
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "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")
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+MODEL_NAME = "openai/gpt-oss-120b:free"
+BASE_DIR = Path(__file__).resolve().parent
+HTML_PATH = BASE_DIR / "wealth_advisor.html"
+
 
 class ChatRequest(BaseModel):
     messages: list
-
-
-def fetch_finnhub_quote(symbol: str) -> dict:
-    logger.info("finnhub.quote.start symbol=%s", symbol)
-    if not FINNHUB_API_KEY:
-        logger.error("finnhub.quote.missing_api_key")
-        raise HTTPException(status_code=500, detail="FINNHUB_API_KEY is not set")
-
-    try:
-        started = time.perf_counter()
-        res = requests.get(
-            FINNHUB_QUOTE_URL,
-            params={"symbol": symbol, "token": FINNHUB_API_KEY},
-            timeout=12
-        )
-        res.raise_for_status()
-        quote = res.json()
-        elapsed_ms = int((time.perf_counter() - started) * 1000)
-        logger.info("finnhub.quote.success symbol=%s status=%s elapsed_ms=%s", symbol, res.status_code, elapsed_ms)
-    except RequestException as exc:
-        logger.exception("finnhub.quote.failed symbol=%s", symbol)
-        raise HTTPException(status_code=502, detail=f"Finnhub request failed: {exc}") from exc
-
-    # Finnhub returns c=0 or missing fields for invalid/unavailable symbols.
-    if not quote or quote.get("c") in (None, 0):
-        logger.warning("finnhub.quote.no_data symbol=%s payload=%s", symbol, quote)
-        raise HTTPException(status_code=404, detail=f"No live quote data for symbol: {symbol}")
-
-    return {
-        "symbol": symbol,
-        "current": quote.get("c"),
-        "change": quote.get("d"),
-        "percent_change": quote.get("dp"),
-        "high": quote.get("h"),
-        "low": quote.get("l"),
-        "open": quote.get("o"),
-        "previous_close": quote.get("pc"),
-        "timestamp": quote.get("t"),
-    }
-
-
-if LANGGRAPH_AVAILABLE:
-    @tool
-    def get_stock_quote(symbol: str) -> str:
-        """Fetch real-time stock quote from Finnhub for a ticker symbol (e.g., AAPL, TSLA, INFY.NS)."""
-        logger.info("tool.get_stock_quote.called symbol=%s", symbol)
-        normalized = symbol.strip().upper()
-        try:
-            payload = fetch_finnhub_quote(normalized)
-            logger.info("tool.get_stock_quote.return symbol=%s current=%s", payload.get("symbol"), payload.get("current"))
-            return json.dumps(payload)
-        except HTTPException as exc:
-            # Tool errors should be returned as tool output so the agent can recover
-            # and suggest alternatives, instead of crashing the whole /chat call.
-            logger.warning(
-                "tool.get_stock_quote.error symbol=%s status=%s detail=%s",
-                normalized,
-                exc.status_code,
-                exc.detail,
-            )
-            return json.dumps(
-                {
-                    "symbol": normalized,
-                    "error": str(exc.detail),
-                    "status_code": exc.status_code,
-                    "hint": "Try a supported ticker format (e.g. AAPL, MSFT, INFY.NS).",
-                }
-            )
-
-
-def convert_messages_for_langgraph(messages: list):
-    converted = []
-    for msg in messages:
-        if not isinstance(msg, dict):
-            continue
-        role = msg.get("role")
-        content = str(msg.get("content", ""))
-        if role == "system":
-            converted.append(SystemMessage(content=content))
-        elif role == "user":
-            converted.append(HumanMessage(content=content))
-        elif role == "assistant":
-            converted.append(AIMessage(content=content))
-    return converted
-
-
-def run_langgraph_agent(messages: list):
-    if not LANGGRAPH_AVAILABLE:
-        logger.error("langgraph.unavailable_missing_packages")
-        raise HTTPException(
-            status_code=500,
-            detail=(
-                "LangGraph dependencies not installed. Install with: "
-                "pip install langgraph langchain langchain-openai"
-            ),
-        )
-
-    logger.info("langgraph.agent.start messages_count=%s", len(messages))
-    llm = ChatOpenAI(
-        api_key=API_KEY,
-        base_url="https://openrouter.ai/api/v1",
-        model="openai/gpt-oss-120b:free",
-        temperature=0,
-    )
-
-    system_guardrail = (
-        "You are WealthWise. Use the get_stock_quote tool whenever the user asks for live/current/"
-        "real-time stock price, intraday movement, or market quote for any ticker."
-    )
-
-    graph = create_react_agent(
-        model=llm,
-        tools=[get_stock_quote],
-        prompt=system_guardrail,
-    )
-
-    started = time.perf_counter()
-    response = graph.invoke({"messages": convert_messages_for_langgraph(messages)})
-    elapsed_ms = int((time.perf_counter() - started) * 1000)
-    final_message = response["messages"][-1]
-    logger.info("langgraph.agent.success elapsed_ms=%s response_chars=%s", elapsed_ms, len(str(final_message.content)))
-    return {
-        "choices": [
-            {
-                "message": {
-                    "role": "assistant",
-                    "content": final_message.content,
-                }
-            }
-        ]
-    }
 
 
 @app.get("/")
@@ -252,25 +107,30 @@ def home():
     return FileResponse(HTML_PATH)
 
 
-@app.get("/stock/quote")
-def stock_quote(symbol: str):
-    logger.info("route.stock_quote symbol=%s", symbol)
-    return fetch_finnhub_quote(symbol.strip().upper())
-
-
 @app.post("/chat")
 def chat(req: ChatRequest):
     logger.info("route.chat.start messages_count=%s", len(req.messages))
+    if not OPENROUTER_API_KEY:
+        logger.error("route.chat.missing_openrouter_api_key")
+        raise HTTPException(status_code=500, detail="OPENROUTER_API_KEY is not set")
+
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "model": MODEL_NAME,
+        "messages": req.messages,
+    }
+
     try:
-        result = run_langgraph_agent(req.messages)
-        logger.info("route.chat.success")
-        return result
-    except HTTPException:
-        logger.exception("route.chat.http_exception")
-        raise
-    except Exception as exc:
-        logger.exception("route.chat.unhandled_exception")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {exc}") from exc
+        response = requests.post(OPENROUTER_URL, headers=headers, json=payload, timeout=40)
+        response.raise_for_status()
+        logger.info("route.chat.success status=%s", response.status_code)
+        return response.json()
+    except requests.RequestException as exc:
+        logger.exception("route.chat.request_failed")
+        raise HTTPException(status_code=502, detail=f"LLM API request failed: {exc}") from exc
 
 
 if __name__ == "__main__":
