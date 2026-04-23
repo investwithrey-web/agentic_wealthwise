@@ -87,7 +87,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("wealthwise")
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "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")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 MODEL_NAME = "openai/gpt-oss-120b:free"
 BASE_DIR = Path(__file__).resolve().parent
@@ -134,5 +134,5 @@ def chat(req: ChatRequest):
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
+    port = int(os.environ.get("PORT", 8051))
     uvicorn.run(app, host="0.0.0.0", port=port)
